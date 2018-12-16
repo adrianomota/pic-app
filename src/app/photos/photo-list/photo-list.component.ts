@@ -1,0 +1,47 @@
+import { Component, OnInit } from "@angular/core";
+import { ActivatedRoute } from "@angular/router";
+
+import { Photo } from "../photo/photo";
+import { PhotoService } from "../photo/photo.service";
+
+@Component({
+  selector: "ap-photo-list",
+  templateUrl: "./photo-list.component.html",
+  styleUrls: ["./photo-list.component.css"]
+})
+export class PhotoListComponent implements OnInit {
+  photos: Photo[] = [];
+  filter: string = "";
+  hasMore: boolean = false;
+  currentPage: number = 1;
+  userName: string = "";
+
+  constructor(
+    private activatedRoute: ActivatedRoute,
+    private photoService: PhotoService
+  ) {}
+
+  ngOnInit(): void {
+    this.userName = this.activatedRoute.snapshot.params.userName;
+    this.photos = this.activatedRoute.snapshot.data["photos"];
+    this.showButton(this.photos);
+  }
+
+  load() {
+    this.photoService
+      .getUsersPaginated(this.userName, ++this.currentPage)
+      .subscribe(photos => {
+        this.filter = "";
+        this.photos = this.photos.concat(photos);
+        this.showButton(photos);
+      });
+  }
+
+  showButton(photos) {
+    if (photos.length < 12) {
+      this.hasMore = false;
+    } else {
+      this.hasMore = true;
+    }
+  }
+}
